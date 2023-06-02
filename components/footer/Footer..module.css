@@ -1,0 +1,32 @@
+.footerWrapper {
+  background-color: black;
+}
+.footerlinks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: small;
+  color: #8e8e8e;
+}
+.fbarlink {
+  color: white !important;
+  text-decoration: none;
+}
+.links {
+  gap: 1rem;
+  font-size: 1rem;
+  text-decoration: none;
+}
+.fbarlink.active {
+  text-decoration: none;
+  background-image: linear-gradient(to left, white, black);
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  background-size: 80% 0.1em;
+}
+@media only screen and (max-width: 768px) {
+  .links {
+    flex-direction: column;
+    align-items: center;
+  }
+}

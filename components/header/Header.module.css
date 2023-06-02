@@ -1,0 +1,149 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;700&family=Source+Serif+Pro:wght@200;400&display=swap');
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 80px;
+  background-color: black;
+  color: white;
+  position: relative;
+}
+.navbar .navbar-left {
+  margin-left: 20px;
+  font-size: 24px;
+}
+.navbar .navbar-toggle-button {
+  display: none;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  position: absolute;
+  top: 25px;
+  right: 20px;
+}
+@media only screen and (max-width: 768px) {
+  .navbar .navbar-toggle-button {
+    display: block;
+  }
+}
+.navbar .navbar-toggle-icon {
+  display: inline-block;
+  width: 20px;
+  height: 2px;
+  background-color: white;
+  position: relative;
+}
+.navbar .navbar-toggle-icon:before,
+.navbar .navbar-toggle-icon:after {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 2px;
+  background-color: white;
+  position: absolute;
+  left: 0;
+  transition: transform 0.3s ease-out;
+}
+.navbar .navbar-toggle-icon:before {
+  top: -6px;
+}
+.navbar .navbar-toggle-icon:after {
+  bottom: -6px;
+}
+.navbar .navbar-right {
+  z-index: 9999;
+  margin-right: 20px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+}
+@media only screen and (max-width: 768px) {
+  .navbar .navbar-right {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    top: 80px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 80px);
+    background-color: black;
+    color: white;
+  }
+  .navbar .navbar-right.open {
+    display: flex;
+    gap: 1.5rem;
+    font-size: large;
+    animation-name: slide-in;
+    animation-duration: 0.5s;
+  }
+  .navbar .navbar-right a {
+    opacity: 0;
+    animation-name: fade-in;
+    animation-duration: 0.5s;
+    animation-delay: 0.3s;
+    animation-fill-mode: forwards;
+  }
+}
+.navbar .navbarlink {
+  text-decoration: none !important;
+  font-family: 'Source Serif Pro', serif;
+  color: white;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+.navbar .navbarlink:hover {
+  text-decoration: none;
+  background-image: linear-gradient(to right, red, white);
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  background-size: 120% 0.1em;
+}
+@media only screen and (min-width: 768px) {
+  .navbar .navbarlink:hover {
+    opacity: 0.8;
+  }
+}
+.navbar .navbarlink.active {
+  color: whitesmoke;
+  text-decoration: none;
+  background-image: linear-gradient(to left, #000, white);
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  background-size: 130% 0.1em;
+}
+.navbar .navbar-brand {
+  font-family: 'Source Serif Pro', serif;
+  font-weight: bold;
+  text-decoration: none;
+  color: white;
+}
+.navbar .navbar-brand:hover {
+  color: #d5d5d5;
+}
+@keyframes slide-in {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes slide-out {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

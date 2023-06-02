@@ -1,0 +1,230 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;700&family=Source+Serif+Pro:wght@200;400&display=swap');
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.card {
+  border: 1px solid #000 !important;
+}
+.card-header {
+  background: white !important;
+}
+body {
+  color: #1d1d1d;
+  font-family: 'Poppins', sans-serif;
+  background: #fff;
+  background-size: 400% 400%;
+  position: relative;
+  animation: animate 7.5s ease-in-out infinite;
+}
+@keyframes animate {
+  0% {
+    background-position: 0 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+.container {
+  min-height: 90vh;
+}
+.App,
+.File {
+  display: flex;
+}
+.File a {
+  width: 40px;
+  height: 40px;
+}
+.form__group {
+  position: relative;
+}
+.form__field {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border: 1px solid #858585 57;
+  padding: calc(0.5rem * 1.5) 0.5rem;
+  color: rgba(0, 0, 0, 0.866);
+  background: transparent;
+  border-radius: 4px;
+}
+.form__field::placeholder {
+  color: transparent;
+}
+.form__label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: calc(0.5rem * 0.75) calc(0.5rem * 0.5);
+  margin: calc(0.5rem * 0.75 + 3px) calc(0.5rem * 0.5);
+  background: #fff;
+  white-space: nowrap;
+  color: black;
+  font-size: 1.15rem;
+  font-family: 'Source Serif Pro', serif;
+  transform: translate(0, 0);
+  transform-origin: 0 0;
+  background: white;
+  transition: transform 120ms ease-in;
+  line-height: 1.2;
+  transform: translate(0.25rem, -65%) scale(0.8);
+}
+/* reset input */
+.form__field:required,
+.form__field:invalid {
+  box-shadow: none;
+}
+.count {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+.list {
+  padding: 30px;
+}
+.star {
+  color: rgba(255, 0, 0, 0.995);
+  font-size: larger;
+}
+.butn {
+  line-height: 50px;
+  height: 50px;
+  text-align: center;
+  width: 100px;
+  cursor: pointer;
+}
+.butn-one {
+  color: #000;
+  transition: all 0.3s;
+  position: relative;
+}
+.butn-one span {
+  content: '\21fd';
+  transition: all 0.3s;
+}
+.butn-one::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  /* left: 1rem;
+	 */
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0;
+  transition: all 0.3s;
+  /* border-top-width: 1px;
+	 */
+  border-bottom-width: 1px;
+  /* border-top-style: solid;
+	 */
+  border-bottom-style: solid;
+  border-top-color: #000;
+  border-bottom-color: #000;
+  transform: scale(0.1, 1);
+}
+.butn-one:hover span {
+  margin-left: 12px;
+  letter-spacing: 2px;
+}
+.butn-one:hover::before {
+  opacity: 1;
+  transform: scale(1, 1);
+}
+.butn-one::after {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  transition: all 0.3s;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.butn-one:hover::after {
+  opacity: 0;
+  transform: scale(0.1, 1);
+}
+.input_projectName {
+  box-sizing: border-box;
+  border: 1px solid #858585 57;
+  color: rgba(0, 0, 0, 0.866);
+  background: transparent;
+  border-radius: 4px;
+}
+.disable {
+  cursor: not-allowed;
+}
+
+.search {
+  position: relative;
+  width: 100%;
+  align-items: center;
+  box-shadow: 0 0 40px rgba(51, 51, 51, 0.1);
+}
+.search input {
+  height: 3rem;
+  text-indent: 25px;
+  border: 1px solid #000;
+  width: 100%;
+  border-radius: 7px;
+}
+.search input:disabled {
+  height: 60px;
+  text-indent: 25px;
+  border: 1px solid #000;
+  cursor: not-allowed;
+  background-color: #eef2f8;
+}
+.search input:focus {
+  box-shadow: none;
+  border: 1px solid rgba(0, 0, 0, 0.614);
+}
+.search .fa-search {
+  position: absolute;
+  top: 20px;
+  left: 16px;
+}
+@media (max-width: 768px) {
+  .toolbar {
+    flex-wrap: wrap;
+  }
+  .dropdown {
+    width: 100%;
+  }
+}
+.toolbar {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+}
+.search button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  height: 50px;
+  width: 110px;
+  border-color: #242427;
+}
+.submitBtn {
+  position: relative;
+  background-color: white;
+  color: black;
+  height: 50px;
+  width: 110px;
+  border-color: #242427;
+}
+@media (max-width: 375px) {
+  .layout {
+    width: min-content;
+  }
+}

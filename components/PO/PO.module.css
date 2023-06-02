@@ -1,0 +1,63 @@
+.File {
+  display: flex;
+}
+.File a {
+  width: 40px;
+  height: 40px;
+}
+
+.formGroup {
+  position: relative;
+}
+.formField {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border: 1px solid #212529e7;
+  padding: calc(0.5rem * 1.5) 0.5rem;
+  color: rgba(42, 42, 42, 0.406);
+  background: transparent;
+  border-radius: 4px;
+}
+.formField::placeholder {
+  color: transparent;
+}
+
+.formLabel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: calc(0.5rem * 0.75) calc(0.5rem * 0.5);
+  margin: calc(0.5rem * 0.75 + 3px) calc(0.5rem * 0.5);
+  background: pink;
+  white-space: nowrap;
+  transform: translate(0, 0);
+  transform-origin: 0 0;
+  background: white;
+  transition: transform 120ms ease-in;
+  font-weight: bold;
+  line-height: 1.2;
+}
+.formField:focus + .formLabel,
+.formField:not(:placeholder-shown) + .form__label {
+  transform: translate(0.25rem, -65%) scale(0.8);
+}
+
+/* reset input */
+.formField:required,
+.formField:invalid {
+  box-shadow: none;
+}
+.count {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.list {
+  padding: 30px;
+}
+.star {
+  color: rgba(255, 0, 0, 0.995);
+  font-size: larger;
+}

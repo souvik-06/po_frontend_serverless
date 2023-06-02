@@ -1,0 +1,43 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true,
+    "source.organizeImports": true
+  },
+  "files.autoSave": "afterDelay",
+  "editor.wordWrap": "on",
+  "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+  "editor.definitionLinkOpensInPeek": false,
+  "editor.experimental.pasteActions.enabled": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true,
+  "editor.quickSuggestions": {
+    "comments": "inline",
+    "strings": "inline"
+  },
+  "editor.suggest.showStatusBar": true,
+  "editor.wordBasedSuggestionsMode": "allDocuments",
+  "files.autoGuessEncoding": true,
+  "workbench.commandPalette.experimental.suggestCommands": true,
+  "window.autoDetectColorScheme": false,
+  "window.closeWhenEmpty": false,
+  "scm.alwaysShowRepositories": true,
+  "terminal.integrated.confirmOnExit": "hasChildProcesses",
+  "problems.showCurrentInStatus": false,
+  "astro.typescript.allowArbitraryAttributes": true,
+  "reactSnippets.settings.prettierEnabled": true,
+  "reactSnippets.settings.typescriptPropsStatePrefix": "interface",
+  "eslint.format.enable": false,
+  "git.autoStash": true,
+  "gitblame.inlineMessageEnabled": true,
+  "gitblame.statusBarMessageClickAction": "Open tool URL",
+  "html.completion.attributeDefaultValue": "singlequotes",
+  "debug.javascript.autoAttachFilter": "onlyWithFlag",
+  "node_require.defaultRequireMethod": "import",
+  "npm-intellisense.packageSubfoldersIntellisense": true,
+  "path-intellisense.autoTriggerNextSuggestion": true,
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
