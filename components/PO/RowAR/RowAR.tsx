@@ -29,7 +29,7 @@ const AddRows = ({ inputList, deleted, setInputList }: IAddRows) => {
             }}
           />
           <label htmlFor="dater" className="form__label">
-            Product {idx + 1}
+            Product {idx + 1} <span className="star">*</span>
           </label>
         </Col>
 
@@ -50,7 +50,7 @@ const AddRows = ({ inputList, deleted, setInputList }: IAddRows) => {
               }}
             />
             <label htmlFor="dater" className="form__label">
-              Amount
+              Amount <span className="star">*</span>
             </label>
             <button
               title="d"

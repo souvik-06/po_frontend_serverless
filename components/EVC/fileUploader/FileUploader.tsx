@@ -1,6 +1,11 @@
-import { faDownload, faXmark } from '@fortawesome/free-solid-svg-icons';
+import {
+  faDownload,
+  faFileExcel,
+  faXmark,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   Button,
@@ -10,9 +15,10 @@ import {
   Form,
 } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import { read, utils } from 'xlsx';
+import XLSX, { read, utils } from 'xlsx';
 import config from '../../../config.json';
 import { IFileUploader } from '../../../interface';
+import styles from '../../DMR/DMR.module.css';
 
 const FileUploader = ({
   fileError,
@@ -27,10 +33,65 @@ const FileUploader = ({
   projectNames,
   setNewEVCreate,
 }: IFileUploader) => {
+  const [evData, setEvData] = useState([]);
+  const [pName, setpName] = useState('');
+
+  const showOptions = async (e: any) => {
+    let data: string = projectNames[e];
+    //console.log(data);
+    setpName(data);
+    await axios
+      .get(`${config.SERVER_URL}xlData/${data}`)
+      .then(async (response) => {
+        const url = response.data;
+        await axios
+          .get(url, { responseType: 'arraybuffer' })
+          .then((response) => {
+            const arrayBuffer = response.data;
+            console.log(arrayBuffer instanceof ArrayBuffer);
+
+            // Process the arrayBuffer here
+            const workbook = XLSX.read(new Uint8Array(arrayBuffer), {
+              type: 'array',
+              cellFormula: true,
+            });
+            const worksheet = workbook.Sheets['JP-EV'];
+            const jsonData: any = XLSX.utils.sheet_to_json(worksheet, {
+              header: 1,
+            });
+
+            // Calculate Consumption values
+            const consumptionColumnIndex = jsonData[0].indexOf('Consumption');
+            for (let i = 1; i < jsonData.length; i++) {
+              const hours = jsonData[i][2]; // Assuming the Hours column is at index 2
+              const rate = jsonData[i][3]; // Assuming the Rate (JPY) column is at index 3
+
+              const consumption =
+                parseFloat(hours) * parseFloat(rate.replace('JPY ', ''));
+              jsonData[i][consumptionColumnIndex] = `JPY ${consumption.toFixed(
+                2
+              )}`;
+            }
+
+            setEvData(jsonData);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        // console.log(response.data);
+        // const link = document.createElement('a');
+        // link.href = url;
+        // link.setAttribute('download', `${data}.xlsx`);
+        // document.body.appendChild(link);
+        // link.click();
+      })
+      .catch((error: any) => {});
+  };
+
   const downloadExcel = (e: any) => {
     const id = toast.loading('Preparing to download.', {
       position: 'bottom-right',
-      autoClose: 500,
+      autoClose: 2000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: false,
@@ -62,6 +123,9 @@ const FileUploader = ({
         link.setAttribute('download', `${data}.xlsx`);
         document.body.appendChild(link);
         link.click();
+        setTimeout(() => {
+          toast.dismiss(id); // Dismiss the toast after the specified duration
+        }, 2000);
       })
       .catch((error: any) => {
         toast.update(id, {
@@ -135,6 +199,10 @@ const FileUploader = ({
     }
   };
 
+  useEffect(() => {
+    showOptions;
+  }, [evData]);
+
   return (
     <>
       <div className="d-flex">
@@ -152,6 +220,28 @@ const FileUploader = ({
             </i>
           }
           onSelect={downloadExcel}
+        >
+          {projectNames.map((projectSelect: string, index: number) => (
+            <Dropdown.Item key={index} eventKey={index}>
+              {projectSelect}
+            </Dropdown.Item>
+          ))}
+        </DropdownButton>
+        <span className="mx-3" />
+        <DropdownButton
+          className="my-3"
+          variant="outline-dark"
+          title={
+            <i>
+              Show Project EV data
+              <FontAwesomeIcon
+                icon={faFileExcel}
+                className="mx-2"
+                style={{ color: '#000000' }}
+              />
+            </i>
+          }
+          onSelect={showOptions}
         >
           {projectNames.map((projectSelect: string, index: number) => (
             <Dropdown.Item key={index} eventKey={index}>
@@ -197,6 +287,77 @@ const FileUploader = ({
           </Card.Body>
         </Card>
       </Form>
+
+      <br></br>
+      <br></br>
+
+      {evData && evData.length > 1 && (
+        <>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <span style={{ textAlign: 'center' }}>
+              <strong>Ev Table of {pName}</strong>
+            </span>
+          </div>
+
+          <div className={styles.table}>
+            <div className={`${styles.rowo} ${styles.header}`}>
+              <div className={`${styles.cell}`}>Year</div>
+              <div className={`${styles.cell}`}>Type</div>
+              <div className={`${styles.cell}`}>Hours</div>
+              <div className={`${styles.cell}`}>Rate (JPY)</div>
+              <div className={`${styles.cell}`}>Consumption</div>
+            </div>
+
+            {evData.slice(1).map((row: any, index) => (
+              <div className={styles.rowo} key={index}>
+                <div className={`${styles.cell}`} data-title="Year">
+                  {row[0]}
+                </div>
+                <div className={`${styles.cell}`} data-title="Type">
+                  {row[1]}
+                </div>
+                <div className={`${styles.cell}`} data-title="Hours">
+                  {row[2]}
+                </div>
+                <div className={`${styles.cell}`} data-title="Rate (JPY)">
+                  {row[3]}
+                </div>
+                <div className={`${styles.cell}`} data-title="Consumption">
+                  {row[4].slice(0, 4)}
+                  {Number(row[4].slice(4).trim()).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <br></br>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              variant="outline-dark"
+              className="text"
+              onClick={() => {
+                setEvData([]);
+                setpName('');
+              }}
+            >
+              Close EV Table
+            </Button>
+          </div>
+        </>
+      )}
     </>
   );
 };

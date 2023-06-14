@@ -9,13 +9,18 @@ import AddRows from '../RowAR/RowAR';
 
 interface IInputList {
   po_id: string;
+  po_type: string;
   poname: string;
   projectName: string;
   date: string;
+  currency: string;
   items: {
     index: number;
     po_description: string;
     amount: string;
+    raisedAmount: string;
+    dmrNo: string;
+    date: string;
   }[];
   filename: string;
 }
@@ -29,10 +34,21 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
   //initial structre of input details
   const [inputList, setInputList] = useState<IInputList>({
     po_id: '',
+    po_type: '',
     poname: '',
     projectName: '',
     date: '',
-    items: [{ index: Math.random(), po_description: '', amount: '' }],
+    currency: '',
+    items: [
+      {
+        index: Math.random(),
+        po_description: '',
+        amount: '',
+        dmrNo: '',
+        raisedAmount: '',
+        date: '',
+      },
+    ],
     filename: fileName.replace(/\s+/g, '+'),
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -43,7 +59,14 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
       ...inputList,
       items: [
         ...inputList.items,
-        { index: Math.random(), po_description: '', amount: '' },
+        {
+          index: Math.random(),
+          po_description: '',
+          amount: '',
+          dmrNo: '',
+          raisedAmount: '',
+          date: '',
+        },
       ],
     });
   };
@@ -68,17 +91,28 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
       toast.error('Please fill PO Name.');
     } else if (inputList.projectName.length === 0) {
       toast.error('Please fill Project Name.');
+    } else if (inputList.items.every((a) => a.amount.length === 0)) {
+      toast.error('Please fill Amount.');
+    } else if (inputList.items.every((a) => a.po_description.length === 0)) {
+      toast.error('Please fill Product Name.');
+    } else if (inputList.po_type.length === 0) {
+      toast.error('Please fill Project Type.');
+    } else if (inputList.currency.length === 0) {
+      toast.error('Please Select Currency.');
     } else {
       setIsLoading(true);
-      const { po_id, date, poname, projectName, items } = inputList;
+      const { po_id, po_type, date, poname, projectName, currency, items } =
+        inputList;
       const formData = new FormData();
       formData.append('file', file);
       console.log(file);
       const data = {
         po_id,
+        po_type,
         date,
         poname,
         projectName,
+        currency,
         items,
         filename: file.name,
       };
@@ -91,15 +125,17 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
         if (response.status === 200) {
           handleReset();
           setIsLoading(false);
-          console.log(response, 'POdetails')
+          console.log(response, 'POdetails');
           toast.success(`${response.data.msg} `);
           // await axios.post(`${config.SERVER_URL}uploadFile`, formData);
-        } if (response.status === 404) {
+        }
+        if (response.status === 404) {
           handleReset();
           setIsLoading(false);
           toast.success(`${response.data.msg} `);
           // await axios.post(`${config.SERVER_URL}uploadFile`, formData);
-        } if (response.status !== 404 && response.status !== 200) {
+        }
+        if (response.status !== 404 && response.status !== 200) {
           // handleReset();
           setIsLoading(false);
           toast.success(`${response.data.msg} `);
@@ -138,6 +174,29 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
               </label>
             </Col>
             <Col className={`${style.formGroup} ${style.field}`}>
+              <select
+                className={`${style['formField']} text-input`}
+                name="potype"
+                id="potype"
+                value={inputList.po_type}
+                required
+                aria-required
+                onChange={(e) =>
+                  setInputList({ ...inputList, po_type: e.target.value })
+                }
+              >
+                <option value="">Select Type</option>
+                <option value="Fixed">Fixed</option>
+                <option value="T&M">T&M</option>
+
+                {/* Add more options as needed */}
+              </select>
+              <label htmlFor="poType" className="form__label">
+                PO Type <span className="star">*</span>
+              </label>
+            </Col>
+
+            <Col className={`${style.formGroup} ${style.field}`}>
               <input
                 className={`${style['formField']} text-input`}
                 type="text"
@@ -155,6 +214,9 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
                 PO Name <span className="star">*</span>
               </label>
             </Col>
+          </Row>
+          <br></br>
+          <Row>
             <Col className={`${style.formGroup} ${style.field}`}>
               <input
                 className={`${style['formField']} text-input`}
@@ -189,6 +251,30 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
               />
               <label htmlFor="date" className="form__label">
                 Select date <span className="star">*</span>
+              </label>
+            </Col>
+            <Col className={`${style.formGroup} ${style.field}`}>
+              <select
+                className={`${style['formField']} currency-dropdown`}
+                name="currency"
+                id="currency"
+                aria-required
+                required
+                value={inputList.currency}
+                onChange={(e) =>
+                  setInputList({ ...inputList, currency: e.target.value })
+                }
+              >
+                <option value="" disabled selected>
+                  Select Currency
+                </option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="JPY">JPY</option>
+                <option value="INR">INR</option>
+              </select>
+              <label htmlFor="currency" className="form__label">
+                Select currency <span className="star">*</span>
               </label>
             </Col>
           </Row>

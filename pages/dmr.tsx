@@ -142,8 +142,11 @@ const DMR: NextPageWithLayout = () => {
         </div>
         {po.length ? (
           <>
-            <Dropdown className={`btn btn-outline-dark ${styles.dropdown}`}>
-              <Dropdown.Toggle className=" dropdown-toggle" variant="outline">
+            <Dropdown className={`${styles.dropdown}`}>
+              <Dropdown.Toggle
+                className=" dropdown-toggle p-3"
+                variant="outline-dark"
+              >
                 Sort By : {sortType}
               </Dropdown.Toggle>
 
@@ -191,7 +194,7 @@ const DMR: NextPageWithLayout = () => {
             ) : po ? (
               <>
                 {error.error === false ? (
-                  <div className='d-flex justify-content-center align-items-center '>
+                  <div className="d-flex justify-content-center align-items-center ">
                     <SpinnerCircular
                       className="m-2 px-2"
                       size={45}
@@ -199,14 +202,14 @@ const DMR: NextPageWithLayout = () => {
                       speed={100}
                       color="#000"
                       secondaryColor="rgba(0, 0, 0, 0.44)"
-                    /><h2>Loading</h2>
+                    />
+                    <h2>Loading</h2>
                   </div>
                 ) : (
                   <Container className="dflex align-items-center justify-content-center">
                     <h2>Some thing went wrong. </h2>
                     <p>
-                      Po details can&apos;t fetch.
-                      Due to {error.errMessage}
+                      Po details can&apos;t fetch. Due to {error.errMessage}
                     </p>
                   </Container>
                 )}
@@ -218,9 +221,8 @@ const DMR: NextPageWithLayout = () => {
         <div className="pt-3 mt-4">
           <POSearch details={detail} />
         </div>
-      )
-      }
-    </Container >
+      )}
+    </Container>
   );
 };
 
