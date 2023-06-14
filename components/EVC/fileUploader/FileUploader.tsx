@@ -48,7 +48,7 @@ const FileUploader = ({
           .get(url, { responseType: 'arraybuffer' })
           .then((response) => {
             const arrayBuffer = response.data;
-            console.log(arrayBuffer instanceof ArrayBuffer);
+            console.log(arrayBuffer);
 
             // Process the arrayBuffer here
             const workbook = XLSX.read(new Uint8Array(arrayBuffer), {
