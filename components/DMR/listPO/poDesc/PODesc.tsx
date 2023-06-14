@@ -36,7 +36,6 @@ const PODesc = ({ searchDetails }: { searchDetails: sortedData }) => {
       } else if (a.raisedAmount > a.amount) {
         toast.error('Raised Amount Cannot be more than the Amount');
         isValid = false;
-      } else {
       }
     });
 

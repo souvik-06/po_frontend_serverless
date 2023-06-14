@@ -19,7 +19,6 @@ const nextConfig = require('next-pwa')({
   runtimeCaching,
 });
 module.exports = nextConfig({
-  buildTimeout: 600000,
   async rewrites() {
     return [
       {

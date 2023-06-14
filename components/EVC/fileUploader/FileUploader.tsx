@@ -85,7 +85,9 @@ const FileUploader = ({
         // document.body.appendChild(link);
         // link.click();
       })
-      .catch((error: any) => {});
+      .catch((error: any) => {
+        console.log(error);
+      });
   };
 
   const downloadExcel = (e: any) => {
@@ -199,9 +201,7 @@ const FileUploader = ({
     }
   };
 
-  useEffect(() => {
-    showOptions;
-  }, [evData]);
+  useEffect(() => {}, [evData]);
 
   return (
     <>

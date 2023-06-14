@@ -22,6 +22,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@commitlint/config-conventional": "^17.6.5",
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
@@ -38,10 +39,11 @@
     "react-router-dom": "^6.10.0",
     "react-toastify": "^9.1.2",
     "spinners-react": "^1.0.7",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.16.10"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
+    "@commitlint/cli": "^17.6.5",
     "@popperjs/core": "^2.11.7",
     "@types/estree": "^1.0.0",
     "@types/node": "18.16.1",

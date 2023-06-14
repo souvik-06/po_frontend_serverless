@@ -45,7 +45,7 @@ const DMRinputs = ({ details }: { details: sortedData }) => {
       });
   };
 
-  console.log("filepath",details.filePath);
+  console.log('filepath', details.filePath);
 
   return (
     <div>
@@ -116,11 +116,7 @@ const DMRinputs = ({ details }: { details: sortedData }) => {
           <label htmlFor="ponumber" className="form__label">
             File Name
           </label>
-          <a
-            href={`${details.filePath}`}
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a href={`${details.filePath}`} target="_blank" rel="noreferrer">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -175,7 +171,7 @@ const DMRinputs = ({ details }: { details: sortedData }) => {
                     <Form.Control
                       name="description"
                       id="description"
-                      value={elementInArray.description}
+                      value={elementInArray.po_description}
                       disabled
                     />
                   </th>

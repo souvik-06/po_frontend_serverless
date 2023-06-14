@@ -81,7 +81,9 @@ const Total: NextPageWithLayout = () => {
           });
           setPo(data);
         }
-      } catch (err: any) {}
+      } catch (err: any) {
+        console.log(err);
+      }
     };
 
     //console.log(years);
@@ -130,10 +132,11 @@ const Total: NextPageWithLayout = () => {
             >
               All
             </Dropdown.Item>
-            {years.map((year) => {
+            {years.map((year, index: number) => {
               return (
                 <Dropdown.Item
                   className="dropdown-item"
+                  key={index}
                   onClick={() => {
                     setFilterType(year);
                   }}
@@ -183,7 +186,6 @@ const Total: NextPageWithLayout = () => {
         </Dropdown>
       </span>
       <br></br>
-
       <TotalDMR poDetails={po}></TotalDMR>
     </Container>
   );
