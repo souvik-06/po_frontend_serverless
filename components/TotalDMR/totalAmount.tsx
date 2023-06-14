@@ -39,7 +39,7 @@ const TotalDMR = ({ poDetails }: { poDetails: sortedData[] }) => {
                 {pData.projectName}
               </div>
               <div className={`${styles.cell}`} data-title="Total Amount">
-                {pData.currency}
+                {pData.currency}{' '}
                 {Number(pData.totalAmount).toLocaleString('en-US', {
                   minimumFractionDigits: 2,
                 })}
@@ -48,7 +48,7 @@ const TotalDMR = ({ poDetails }: { poDetails: sortedData[] }) => {
                 className={`${styles.cell}`}
                 data-title="Total Raised Amount"
               >
-                {pData.currency}
+                {pData.currency}{' '}
                 {pData.totalRaisedAmount === 'NaN'
                   ? '0.00'
                   : Number(pData.totalRaisedAmount).toLocaleString('en-US', {
