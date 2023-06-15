@@ -8,44 +8,50 @@ import '../DMR.module.css';
 
 const DMRinputs = ({ details }: { details: sortedData }) => {
   const data = details.details;
+  //console.log(data);
   const [inputList, setInputList] = useState(data);
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    const id = toast.loading('Submitting details', {
-      position: 'bottom-right',
-      autoClose: 500,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: true,
-      progress: undefined,
-      theme: 'light',
-    });
-    // console.log('DMRINput', data);
+    console.log('DMRINput', data);
     e.preventDefault();
-    axios
-      .patch(`${config.SERVER_URL}poDetails/${details.ponumber}`, data)
-      .then(() => {
-        toast.update(id, {
-          render: 'Data Submitted Successfully.',
-          type: 'success',
-          isLoading: false,
-          autoClose: 300,
+
+    let isValid = true;
+
+    data.map((a) => {
+      console.log(a);
+      if (a.raisedAmount?.length === 0) {
+        toast.error('Please fill Raised Amount.');
+        isValid = false;
+      } else if (a.dmrNo?.length === 0) {
+        toast.error('Please fill DMR No.');
+        isValid = false;
+      } else if (a.date?.length === 0) {
+        toast.error('Please fill Date.');
+        isValid = false;
+      } else if (parseFloat(a.raisedAmount) > parseFloat(a.amount)) {
+        toast.error('Raised Amount Cannot be more than the Amount');
+        isValid = false;
+      }
+    });
+
+    if (isValid) {
+      axios
+        .patch(`${config.SERVER_URL}poDetails/${details.ponumber}`, data)
+        .then((res) => {
+          if (res.status === 404) {
+            toast.error('404, File Not Found.');
+          } else if (res.status === 200) {
+            toast.success('Data updated successfully.');
+          }
+        })
+        .catch((err) => {
+          toast.error(`Data Not Updated. Error: ${err.message}.`);
+          // console.log(err);
         });
-        // console.log('Response', d);
-      })
-      .catch((err) => {
-        toast.update(id, {
-          render: `${err.message}.`,
-          type: 'error',
-          isLoading: false,
-          autoClose: 300,
-        });
-        // console.log(err);
-      });
+    }
   };
 
-  console.log('filepath', details.filePath);
+  //console.log('filepath', details.filePath);
 
   return (
     <div>
@@ -156,69 +162,75 @@ const DMRinputs = ({ details }: { details: sortedData }) => {
           <tr>
             <th>Product</th>
             <th>Amount</th>
-            <th>Raised Amount</th>
-            <th>DMR No.</th>
-            <th>Date</th>
+            <th>
+              Raised Amount
+              <span className="star">*</span>
+            </th>
+            <th>
+              DMR No.
+              <span className="star">*</span>
+            </th>
+            <th>
+              Date
+              <span className="star">*</span>
+            </th>
           </tr>
         </thead>
         <tbody>
           {data?.map((elementInArray, index) => {
             return (
-              <>
-                {' '}
-                <tr key={index}>
-                  <th scope="row">
-                    <Form.Control
-                      name="description"
-                      id="description"
-                      value={elementInArray.po_description}
-                      disabled
-                    />
-                  </th>
-                  <td>
-                    <Form.Control
-                      name="amount"
-                      id="amount"
-                      value={elementInArray.amount}
-                      disabled
-                    />
-                  </td>
-                  <td>
-                    <Form.Control
-                      name="raisedAmount"
-                      id="raisedAmount"
-                      value={elementInArray.raisedAmount}
-                      onChange={(e) => {
-                        elementInArray.raisedAmount = e.target.value;
-                        setInputList({ ...inputList! });
-                      }}
-                    />
-                  </td>
-                  <td>
-                    <Form.Control
-                      name="dmrNo"
-                      id="dmrNo"
-                      value={elementInArray.dmrNo}
-                      onChange={(e) => {
-                        elementInArray.dmrNo = e.target.value;
-                        setInputList({ ...inputList! });
-                      }}
-                    />
-                  </td>
-                  <td>
-                    <Form.Control
-                      name="date"
-                      id="date"
-                      type="date"
-                      value={elementInArray.date}
-                      onChange={(e) => {
-                        elementInArray.date = e.target.value;
-                        setInputList({ ...inputList! });
-                      }}
-                    />
-                  </td>
-                </tr>
-              </>
+              <tr key={index}>
+                <th scope="row">
+                  <Form.Control
+                    name="description"
+                    id="description"
+                    value={elementInArray.po_description}
+                    disabled
+                  />
+                </th>
+                <td>
+                  <Form.Control
+                    name="amount"
+                    id="amount"
+                    value={elementInArray.amount}
+                    disabled
+                  />
+                </td>
+                <td>
+                  <Form.Control
+                    name="raisedAmount"
+                    id="raisedAmount"
+                    value={elementInArray.raisedAmount}
+                    onChange={(e) => {
+                      elementInArray.raisedAmount = e.target.value;
+                      setInputList({ ...inputList! });
+                    }}
+                  />
+                </td>
+                <td>
+                  <Form.Control
+                    name="dmrNo"
+                    id="dmrNo"
+                    value={elementInArray.dmrNo}
+                    onChange={(e) => {
+                      elementInArray.dmrNo = e.target.value;
+                      setInputList({ ...inputList! });
+                    }}
+                  />
+                </td>
+                <td>
+                  <Form.Control
+                    name="date"
+                    id="date"
+                    type="date"
+                    value={elementInArray.date}
+                    onChange={(e) => {
+                      elementInArray.date = e.target.value;
+                      setInputList({ ...inputList! });
+                    }}
+                  />
+                </td>
+              </tr>
             );
           })}
         </tbody>
