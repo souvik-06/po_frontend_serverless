@@ -32,6 +32,7 @@ const FileUploader = ({
   setHeader,
   projectNames,
   setNewEVCreate,
+  showTable,
 }: IFileUploader) => {
   const [evData, setEvData] = useState([]);
   const [pName, setpName] = useState('');
@@ -55,28 +56,35 @@ const FileUploader = ({
               type: 'array',
               cellFormula: true,
             });
+
             const worksheet = workbook.Sheets['JP-EV'];
-            const jsonData: any = XLSX.utils.sheet_to_json(worksheet, {
-              header: 1,
-            });
+            if (worksheet) {
+              const jsonData: any = XLSX.utils.sheet_to_json(worksheet, {
+                header: 1,
+              });
 
-            // Calculate Consumption values
-            const consumptionColumnIndex = jsonData[0].indexOf('Consumption');
-            for (let i = 1; i < jsonData.length; i++) {
-              const hours = jsonData[i][2]; // Assuming the Hours column is at index 2
-              const rate = jsonData[i][3]; // Assuming the Rate (JPY) column is at index 3
+              // Calculate Consumption values
+              const consumptionColumnIndex = jsonData[0].indexOf('Consumption');
+              for (let i = 1; i < jsonData.length; i++) {
+                const hours = jsonData[i][2]; // Assuming the Hours column is at index 2
+                const rate = jsonData[i][3]; // Assuming the Rate (JPY) column is at index 3
 
-              const consumption =
-                parseFloat(hours) * parseFloat(rate.replace('JPY ', ''));
-              jsonData[i][consumptionColumnIndex] = `JPY ${consumption.toFixed(
-                2
-              )}`;
+                const consumption =
+                  parseFloat(hours) * parseFloat(rate.replace('JPY ', ''));
+                jsonData[i][
+                  consumptionColumnIndex
+                ] = `JPY ${consumption.toFixed(2)}`;
+              }
+
+              setEvData(jsonData);
+            } else {
+              setEvData([]);
+              toast.error('No EV Data in the file');
             }
-
-            setEvData(jsonData);
           })
           .catch((error) => {
             console.error(error);
+            toast.error('Something is Wrong in your EV Sheet');
           });
         // console.log(response.data);
         // const link = document.createElement('a');
@@ -91,6 +99,8 @@ const FileUploader = ({
   };
 
   const downloadExcel = (e: any) => {
+    setEvData([]);
+    setpName('');
     const id = toast.loading('Preparing to download.', {
       position: 'bottom-right',
       autoClose: 2000,
@@ -139,63 +149,125 @@ const FileUploader = ({
       });
   };
 
-  const handleFileUpload = (e: any) => {
+  const handleFileUpload = async (e: any) => {
     e.preventDefault();
     setFileError('');
     try {
+      let numericData = true;
       let file: File | null = e.target.files[0];
 
       if (!file) {
         return;
       }
-      console.log(file.type);
+      //console.log(file.type);
+
+      /////////////////////////////////////////////////////////////////////////////////////////////
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
       if (
         file.type !==
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       ) {
         toast.error('Please select XLSX file only!');
         handleRemoveFile();
-      } else {
+      } else if (file) {
+        console.log('in my code');
         const reader = new FileReader();
         reader.onload = (event: any) => {
           const workbook = read(event.target.result, {
             type: 'binary',
             cellFormula: true,
           });
-          setWorkbook(workbook);
-          setSheetName(workbook.SheetNames);
-          const selectedWorksheet = workbook.Sheets[workbook.SheetNames[0]];
-          const sheetData1: Array<string[]> = utils.sheet_to_json(
-            selectedWorksheet,
-            {
-              header: 1,
-              raw: false,
-              dateNF: 'yyyy-mm-dd',
-              // cellDates: true,
-            }
-          );
-          const sheetData = utils.sheet_to_json(selectedWorksheet, {
-            raw: false,
-            dateNF: 'yyyy-mm-dd',
-            // cellDates: true,
-          });
-          setHeader(sheetData1[0]);
+          const sheet = workbook.Sheets['JP-M'];
 
-          // Modify sheet data
-          const modifiedSheetData = sheetData.map((row, index) => {
-            if (index === 1) {
-              return Array.isArray(row)
-                ? row.map((cell) => (cell == null || cell === '' ? 0 : cell))
-                : row;
-            }
-            return row;
-          });
-          setData(modifiedSheetData as string[]);
+          let isValid = true;
+          const range = XLSX.utils.decode_range(sheet['!ref'] || '');
 
-          console.log(modifiedSheetData, 'sheetdata');
+          //console.log(range);
+
+          for (let rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
+            for (let colNum = range.s.c + 2; colNum <= range.e.c; colNum++) {
+              if (colNum === range.s.c + 1) {
+                continue; // Skip the second column
+              }
+
+              const cellAddress = XLSX.utils.encode_cell({
+                r: rowNum,
+                c: colNum,
+              });
+              const cell = sheet[cellAddress];
+
+              if (cell) {
+                const cellValue = cell.v;
+                //console.log(cellValue);
+                if (isNaN(Number(cellValue))) {
+                  console.log('NaN');
+                  isValid = false;
+                  numericData = false;
+                  //console.log(numericData, 'spl');
+                  break;
+                }
+              }
+            }
+            if (!isValid) {
+              numericData = false;
+              //console.log(numericData);
+              break;
+            }
+          }
+          if (numericData === true) {
+            const reader = new FileReader();
+            reader.onload = (event: any) => {
+              const workbook = read(event.target.result, {
+                type: 'binary',
+                cellFormula: true,
+              });
+              setWorkbook(workbook);
+              setSheetName(workbook.SheetNames);
+              const selectedWorksheet = workbook.Sheets[workbook.SheetNames[0]];
+              const sheetData1: Array<string[]> = utils.sheet_to_json(
+                selectedWorksheet,
+                {
+                  header: 1,
+                  raw: false,
+                  dateNF: 'yyyy-mm-dd',
+                  // cellDates: true,
+                }
+              );
+              const sheetData = utils.sheet_to_json(selectedWorksheet, {
+                raw: false,
+                dateNF: 'yyyy-mm-dd',
+                // cellDates: true,
+              });
+              setHeader(sheetData1[0]);
+
+              // Modify sheet data
+              const modifiedSheetData = sheetData.map((row, index) => {
+                if (index === 1) {
+                  return Array.isArray(row)
+                    ? row.map((cell) =>
+                        cell == null || cell === '' ? 0 : cell
+                      )
+                    : row;
+                }
+                return row;
+              });
+              setData(modifiedSheetData as string[]);
+
+              console.log(modifiedSheetData, 'sheetdata');
+            };
+            if (file instanceof File) {
+              reader.readAsBinaryString(file);
+            }
+          } else {
+            toast.error('Error reading file, have Non-Numeric Values');
+            handleRemoveFile();
+          }
         };
         reader.readAsBinaryString(file);
       }
+      console.log(numericData, 'final');
     } catch (error) {
       setFileError('Error reading file. Please select a valid Excel file.');
     }
@@ -241,7 +313,10 @@ const FileUploader = ({
               />
             </i>
           }
-          onSelect={showOptions}
+          onSelect={(e) => {
+            showOptions(e);
+            showTable(false);
+          }}
         >
           {projectNames.map((projectSelect: string, index: number) => (
             <Dropdown.Item key={index} eventKey={index}>
@@ -253,7 +328,11 @@ const FileUploader = ({
         <Button
           variant="outline-primary"
           className="my-3"
-          onClick={() => setNewEVCreate(true)}
+          onClick={() => {
+            setNewEVCreate(true);
+            setEvData([]);
+            setpName('');
+          }}
         >
           Add New Project
         </Button>
@@ -268,7 +347,11 @@ const FileUploader = ({
                 title="file"
                 type="file"
                 name="file"
-                onChange={handleFileUpload}
+                onChange={(e) => {
+                  setEvData([]);
+                  setpName('');
+                  handleFileUpload(e);
+                }}
                 ref={inputFileRef}
                 accept=".xlsx"
                 required

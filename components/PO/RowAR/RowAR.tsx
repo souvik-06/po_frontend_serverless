@@ -37,7 +37,7 @@ const AddRows = ({ inputList, deleted, setInputList }: IAddRows) => {
           <>
             <input
               className="text-input form__field"
-              type="number"
+              type="text"
               aria-label="Enter Amount"
               name="amount"
               data-id={idx}
@@ -45,7 +45,26 @@ const AddRows = ({ inputList, deleted, setInputList }: IAddRows) => {
               id={amount}
               value={val.amount}
               onChange={(e) => {
-                val.amount = e.target.value;
+                const input = e.target.value;
+                let decimalValue = input.replace(/[^0-9.]/g, ''); // Remove non-numeric and non-dot characters
+
+                const dotIndex = decimalValue.indexOf('.');
+                if (dotIndex !== -1) {
+                  // Limit the input to two decimal places after the dot
+                  const decimalPart = decimalValue.slice(dotIndex + 1);
+                  decimalValue =
+                    decimalValue.slice(0, dotIndex + 1) +
+                    decimalPart.slice(0, 2);
+                }
+
+                if (/^\d*\.?\d{0,2}$/.test(decimalValue)) {
+                  // Only update the value if it's empty or contains up to two decimal places
+                  val.amount = decimalValue;
+                } else {
+                  // Handle invalid input (clear the value or take other action)
+                  val.amount = ''; // or any other desired action
+                }
+
                 setInputList({ ...inputList });
               }}
             />

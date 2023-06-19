@@ -38,6 +38,8 @@ export interface IFileUploader {
   setSheetName: Dispatch<SetStateAction<Array<string>>>;
   sheetName: string[];
   setHeader: Dispatch<SetStateAction<Array<string>>>;
+  fetchEVF: () => void;
+  showTable: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface ISheetSelector {

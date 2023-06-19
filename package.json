@@ -39,7 +39,8 @@
     "react-router-dom": "^6.10.0",
     "react-toastify": "^9.1.2",
     "spinners-react": "^1.0.7",
-    "xlsx": "0.16.9"
+    "xlsx": "^0.16.9",
+    "xlsx-populate": "^1.21.0"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",

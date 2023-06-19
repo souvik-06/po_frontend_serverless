@@ -2,9 +2,10 @@
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import axios from 'axios';
-import { Dispatch, SetStateAction, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { Card } from 'react-bootstrap';
 import { toast } from 'react-toastify';
+import XLSX, { read } from 'xlsx';
 import config from '../../../config.json';
 
 type Props = {
@@ -12,9 +13,15 @@ type Props = {
   projectNames: string[];
   newEV: boolean;
   setNewEVCreate: Dispatch<SetStateAction<boolean>>;
+  fetchEVF: () => void;
 };
 
-const NewEV = ({ errorMessage, projectNames, setNewEVCreate }: Props) => {
+const NewEV = ({
+  errorMessage,
+  projectNames,
+  setNewEVCreate,
+  fetchEVF,
+}: Props) => {
   // const [create, setCreate] = useState<boolean>(false);
   const [project, setproject] = useState<string>('');
   const [file, setFile] = useState<File | null>(null);
@@ -71,6 +78,7 @@ const NewEV = ({ errorMessage, projectNames, setNewEVCreate }: Props) => {
         autoClose: 700,
       });
     }
+    let numericData = true;
     if (project.length === 0) {
       toast.update(id, {
         render: 'Please enter project name.',
@@ -79,45 +87,111 @@ const NewEV = ({ errorMessage, projectNames, setNewEVCreate }: Props) => {
         autoClose: 700,
       });
     } else if (project.length > 0) {
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = async (event: any) => {
+          const workbook = read(event.target.result, {
+            type: 'binary',
+            cellFormula: true,
+          });
+          const sheet = workbook.Sheets['JP-M'];
 
-      const formData = new FormData();
-      let tempfile = file as File
-      formData.append('file', tempfile);
-      formData.append('project', project);
+          let isValid = true;
+          const range = XLSX.utils.decode_range(sheet['!ref'] || '');
 
+          //console.log(range);
 
-      const response = await axios.post(`${config.SERVER_URL}evDataCreate`,
-        formData
-      );
-      console.log(response)
-      if (response.status === 404) {
-        toast.update(id, {
-          render: 'Error.',
-          type: 'error',
-          isLoading: false,
-          autoClose: 300,
-        });
-      } else if (response.status === 200) {
-        // toast.success('Data Submitted Successfully');
-        toast.update(id, {
-          render: 'File saved Successfully.',
-          type: 'success',
-          isLoading: false,
-          autoClose: 300,
-        });
+          for (let rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
+            for (let colNum = range.s.c + 2; colNum <= range.e.c; colNum++) {
+              if (colNum === range.s.c + 1) {
+                continue; // Skip the second column
+              }
+
+              const cellAddress = XLSX.utils.encode_cell({
+                r: rowNum,
+                c: colNum,
+              });
+              const cell = sheet[cellAddress];
+
+              if (cell) {
+                const cellValue = cell.v;
+                //console.log(cellValue);
+                if (isNaN(Number(cellValue))) {
+                  console.log('NaN');
+                  isValid = false;
+                  numericData = false;
+                  //console.log(numericData, 'spl');
+                  break;
+                }
+              }
+            }
+            if (!isValid) {
+              numericData = false;
+              //console.log(numericData);
+              break;
+            }
+          }
+          if (numericData === true) {
+            const formData = new FormData();
+            let tempfile = file as File;
+            formData.append('file', tempfile);
+            formData.append('project', project);
+
+            const response = await axios.post(
+              `${config.SERVER_URL}evDataCreate`,
+              formData
+            );
+            console.log(response);
+
+            if (response.status === 404) {
+              toast.update(id, {
+                render: 'Error.',
+                type: 'error',
+                isLoading: false,
+                autoClose: 300,
+              });
+            } else if (response.status === 200) {
+              // toast.success('Data Submitted Successfully');
+              fetchEVF();
+              toast.update(id, {
+                render: 'File saved Successfully.',
+                type: 'success',
+                isLoading: false,
+                autoClose: 300,
+              });
+            }
+          } else {
+            toast.update(id, {
+              render: 'Error reading file, have Non-Numeric Values',
+              type: 'error',
+              isLoading: false,
+              autoClose: 1500,
+            });
+          }
+        };
+        reader.readAsBinaryString(file);
       }
     }
   };
 
+  useEffect(() => {
+    if (projectNames.length === 0) {
+      setTimeout(() => {
+        fetchEVF();
+      }, 2000); // 2000 milliseconds (2 seconds) delay
+    }
+  }, [fetchEVF, projectNames.length]);
+
   return (
     <div className="my-4">
-
       <div>
-        {projectNames.length === 0 && <h4 className='my-4'>
-          <small> Can&apos;t find any project.</small>
-          <br />
-          <strong>Please add new project !</strong>
-        </h4>}
+        {projectNames.length === 0 && (
+          <h4 className="my-4">
+            <small> Can&apos;t find any project.</small>
+            <br />
+            <strong>Please add new project !</strong>
+          </h4>
+        )}
         <Card className=" mt-3 files">
           {file == null && (
             <Card.Header className="text-center">
@@ -176,25 +250,27 @@ const NewEV = ({ errorMessage, projectNames, setNewEVCreate }: Props) => {
                       width: '7rem',
                     }}
                     className={`btn btn-outline-danger `}
+                    onClick={handleReset}
                   >
                     Reset
                   </button>
-                  {projectNames.length > 0 && <button
-                    style={{
-                      width: '7rem',
-                    }}
-                    onClick={() => setNewEVCreate(false)}
-                    className={`btn btn-outline-dark `}
-                  >
-                    Go Back
-                  </button>}
+                  {projectNames.length > 0 && (
+                    <button
+                      style={{
+                        width: '7rem',
+                      }}
+                      onClick={() => setNewEVCreate(false)}
+                      className={`btn btn-outline-dark `}
+                    >
+                      Go Back
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           </Card.Body>
         </Card>
       </div>
-
     </div>
   );
 };

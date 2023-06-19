@@ -178,7 +178,26 @@ const PODesc = ({ searchDetails }: { searchDetails: sortedData }) => {
                   id="amount"
                   value={elementInArray.amount}
                   onChange={(e) => {
-                    elementInArray.amount = e.target.value;
+                    const input = e.target.value;
+                    let decimalValue = input.replace(/[^0-9.]/g, ''); // Remove non-numeric and non-dot characters
+
+                    const dotIndex = decimalValue.indexOf('.');
+                    if (dotIndex !== -1) {
+                      // Limit the input to two decimal places after the dot
+                      const decimalPart = decimalValue.slice(dotIndex + 1);
+                      decimalValue =
+                        decimalValue.slice(0, dotIndex + 1) +
+                        decimalPart.slice(0, 2);
+                    }
+
+                    if (/^\d*\.?\d{0,2}$/.test(decimalValue)) {
+                      // Only update the value if it's empty or contains up to two decimal places
+                      elementInArray.amount = decimalValue;
+                    } else {
+                      // Handle invalid input (clear the value or take other action)
+                      elementInArray.amount = ''; // or any other desired action
+                    }
+
                     setInputList({ ...inputList });
                   }}
                   required
@@ -202,7 +221,26 @@ const PODesc = ({ searchDetails }: { searchDetails: sortedData }) => {
                   id="raisedAmount"
                   value={elementInArray.raisedAmount}
                   onChange={(e) => {
-                    elementInArray.raisedAmount = e.target.value;
+                    const input = e.target.value;
+                    let decimalValue = input.replace(/[^0-9.]/g, ''); // Remove non-numeric and non-dot characters
+
+                    const dotIndex = decimalValue.indexOf('.');
+                    if (dotIndex !== -1) {
+                      // Limit the input to two decimal places after the dot
+                      const decimalPart = decimalValue.slice(dotIndex + 1);
+                      decimalValue =
+                        decimalValue.slice(0, dotIndex + 1) +
+                        decimalPart.slice(0, 2);
+                    }
+
+                    if (/^\d*\.?\d{0,2}$/.test(decimalValue)) {
+                      // Only update the value if it's empty or contains up to two decimal places
+                      elementInArray.raisedAmount = decimalValue;
+                    } else {
+                      // Handle invalid input (clear the value or take other action)
+                      elementInArray.raisedAmount = ''; // or any other desired action
+                    }
+
                     setInputList({ ...inputList });
                   }}
                   required

@@ -52,11 +52,33 @@ const EVC: NextPageWithLayout = () => {
     document.title = 'EVC';
 
     let isSubscribe: boolean = true;
-    const fetchEVF = async () => {
+
+    const fetchProjects = async () => {
       try {
-        const response = await axios.get(`${config.SERVER_URL}getEvFiles`);
-        setProjectName(response.data);
-        console.log(response);
+        const fetchData = async () => {
+          const response = await axios.get(`${config.SERVER_URL}getEvFiles`);
+          const currentProjectName = response.data;
+          if (currentProjectName !== previousProjectName) {
+            // Updated data is available, set the state and exit the function
+            setProjectName(currentProjectName);
+            console.log(response);
+            return;
+          }
+          // Wait for a specified duration (e.g., 2 seconds) before fetching again
+          setTimeout(fetchData, 2000);
+        };
+
+        let response = await axios.get(`${config.SERVER_URL}getEvFiles`);
+        const initialProjectName = response.data;
+
+        // Keep track of the previous response data
+        let previousProjectName = initialProjectName;
+        if (projectName.length !== 0) {
+          setNewEV(false);
+        }
+
+        // Initial call to fetchData
+        await fetchData(); // Add 'await' here
       } catch (err) {
         console.log(err);
         setNewEV(true);
@@ -64,13 +86,50 @@ const EVC: NextPageWithLayout = () => {
         setError((prev) => ({ ...prev, error: true, errMessage: er }));
       }
     };
+
     if (isSubscribe) {
-      fetchEVF();
+      fetchProjects();
     }
     return () => {
       isSubscribe = false;
     };
-  }, []);
+  }, [projectName.length]);
+
+  const fetchEVF = async () => {
+    try {
+      const fetchData = async () => {
+        const response = await axios.get(`${config.SERVER_URL}getEvFiles`);
+        const currentProjectName = response.data;
+        //console.log(currentProjectName);
+        if (currentProjectName !== previousProjectName) {
+          // Updated data is available, set the state and exit the function
+          setProjectName(currentProjectName);
+          console.log(response);
+          return;
+        }
+        // Wait for a specified duration (e.g., 2 seconds) before fetching again
+        setTimeout(fetchData, 2000);
+      };
+
+      let response = await axios.get(`${config.SERVER_URL}getEvFiles`);
+      const initialProjectName = response.data;
+      console.log(initialProjectName);
+
+      // Keep track of the previous response data
+      let previousProjectName = initialProjectName;
+      if (projectName.length !== 0) {
+        setNewEV(false);
+      }
+
+      // Initial call to fetchData
+      await fetchData(); // Add 'await' here
+    } catch (err) {
+      console.log(err);
+      setNewEV(true);
+      const er: string = ((err as AxiosError).response?.data as any)?.message;
+      setError((prev) => ({ ...prev, error: true, errMessage: er }));
+    }
+  };
 
   const handleSubmit = async () => {
     const id = toast.loading('Submiting...', {
@@ -135,6 +194,7 @@ const EVC: NextPageWithLayout = () => {
     inputFileRef.current.value = '';
     // toast.info(`${error.message}`);
   };
+
   return (
     <Container className=" mb-5">
       {projectName.length && !newEV ? (
@@ -154,6 +214,8 @@ const EVC: NextPageWithLayout = () => {
                 setSheetName={setSheetName}
                 sheetName={sheetName}
                 setHeader={setHeader}
+                fetchEVF={fetchEVF}
+                showTable={setShowComponent}
               />
             </Col>
           </Row>
@@ -256,6 +318,7 @@ const EVC: NextPageWithLayout = () => {
               projectNames={projectName}
               newEV={newEV}
               setNewEVCreate={setNewEV}
+              fetchEVF={fetchEVF}
             />
           )}
         </>

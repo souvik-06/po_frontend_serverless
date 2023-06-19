@@ -13,22 +13,25 @@ const Home: NextPageWithLayout = () => {
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState('');
 
-  const 
-  handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
     const selectedFiles = files as FileList;
     const file: File = selectedFiles?.[0];
 
-    if (!file) { return }
-    console.log(file.type)
+    if (!file) {
+      return;
+    }
+    console.log(file.type);
     if (file.type !== 'application/pdf') {
-      toast.error('Please select PDF file only!')
-      fileRef.current.value = ''
+      toast.error('Please select PDF file only!');
+      fileRef.current.value = '';
+    } else if (file.size > 1 * 1024 * 1024) {
+      toast.error('File Size Should be less than 1 MB');
+      fileRef.current.value = '';
     } else {
       setFileName(file.name);
       setFile(file);
     }
-
   };
   const handleReset = () => {
     setFileName('');
@@ -47,7 +50,7 @@ const Home: NextPageWithLayout = () => {
             {file != null && (
               <Card.Title>{fileName} uploaded successfully.</Card.Title>
             )}
-            <Card.Text>
+            <Card.Text style={{ marginTop: '10px' }}>
               <input
                 title="file"
                 type="file"
@@ -57,17 +60,30 @@ const Home: NextPageWithLayout = () => {
                 accept=".pdf"
                 required
               />
-              {file != null ? (
-                <> <i onClick={handleReset}>
-                  <FontAwesomeIcon
-                    icon={faXmark}
-                    style={{ color: '#000000' }}
-                  />
-                </i>
 
+              {file != null ? (
+                <>
+                  {' '}
+                  <i onClick={handleReset}>
+                    <FontAwesomeIcon
+                      icon={faXmark}
+                      style={{ color: '#000000' }}
+                    />
+                  </i>
                 </>
               ) : null}
             </Card.Text>
+            {!file && (
+              <p
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: '12px',
+                  marginRight: '130px',
+                }}
+              >
+                (File Size Should be less than 1MB)
+              </p>
+            )}
           </Card.Body>
         </Card>
         {file != null && (

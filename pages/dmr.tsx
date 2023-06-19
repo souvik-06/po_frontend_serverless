@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Container, Dropdown } from 'react-bootstrap';
-import { SpinnerCircular } from 'spinners-react';
 import ListPo from '../components/DMR/listPO/ListPo';
 import POSearch from '../components/DMR/poSearch/POSearch';
 import PrimaryLayout from '../components/layouts/primary/PrimaryLayout';
@@ -195,15 +194,7 @@ const DMR: NextPageWithLayout = () => {
               <>
                 {error.error === false ? (
                   <div className="d-flex justify-content-center align-items-center ">
-                    <SpinnerCircular
-                      className="m-2 px-2"
-                      size={45}
-                      thickness={100}
-                      speed={100}
-                      color="#000"
-                      secondaryColor="rgba(0, 0, 0, 0.44)"
-                    />
-                    <h2>Loading</h2>
+                    <h2>No PO Details Found</h2>
                   </div>
                 ) : (
                   <Container className="dflex align-items-center justify-content-center">
