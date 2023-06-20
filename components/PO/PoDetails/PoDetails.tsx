@@ -295,16 +295,29 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
             <Col className={`${style.formGroup} ${style.field}`}>
               <input
                 className={`${style['formField']} text-input`}
-                type="date"
-                placeholder="Select Date"
                 name="date"
                 id="date"
+                type="date"
+                value={inputList.date}
+                onChange={(e) => {
+                  const inputDate = new Date(e.target.value);
+                  const maxYear = new Date();
+                  maxYear.setFullYear(maxYear.getFullYear() + 50); // Maximum allowed year is 50 years greater than today
+
+                  if (inputDate > maxYear) {
+                    // Input date exceeds the maximum allowed year
+                    // You can handle this validation error accordingly
+                    console.log(
+                      'Please enter a date up to 50 years from today.'
+                    );
+                    return;
+                  }
+
+                  inputList.date = e.target.value;
+                  setInputList({ ...inputList, date: e.target.value });
+                }}
                 aria-required
                 required
-                value={inputList.date}
-                onChange={(e) =>
-                  setInputList({ ...inputList, date: e.target.value })
-                }
               />
               <label htmlFor="date" className="form__label">
                 Select date <span className="star">*</span>
