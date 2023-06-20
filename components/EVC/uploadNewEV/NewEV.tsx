@@ -3,10 +3,11 @@ import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import axios from 'axios';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import { Card } from 'react-bootstrap';
+import { Button, Card, Dropdown, DropdownButton } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import XLSX, { read } from 'xlsx';
+import XLSX, { WorkBook, read, utils } from 'xlsx';
 import config from '../../../config.json';
+import DataTable from '../dataTable/DataTable';
 
 type Props = {
   errorMessage: string | null | undefined;
@@ -29,6 +30,12 @@ const NewEV = ({
   const inputFileRef = useRef<any>(null);
   // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(false);
+  const [workbook, setWorkbook] = useState<WorkBook>({} as WorkBook);
+  const [header, setHeader] = useState<string[]>([]);
+  const [data, setData] = useState<string[]>([]);
+  const [sheetName, setSheetName] = useState<string[]>([]);
+  const [selectedSheetIndex, setSelectedSheetIndex] = useState(0);
+  const [showComponent, setShowComponent] = useState<boolean>(false);
 
   const handleReset = () => {
     inputFileRef.current.value = null;
@@ -55,123 +62,159 @@ const NewEV = ({
     } else {
       setFile(file);
       setFileName(file.name);
+      const reader = new FileReader();
+      reader.onload = (event: any) => {
+        const workbook = read(event.target.result, {
+          type: 'binary',
+          cellFormula: true,
+        });
+        setWorkbook(workbook);
+        setSheetName(workbook.SheetNames);
+        const selectedWorksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const sheetData1: Array<string[]> = utils.sheet_to_json(
+          selectedWorksheet,
+          {
+            header: 1,
+            raw: false,
+            dateNF: 'yyyy-mm-dd',
+            // cellDates: true,
+          }
+        );
+        const sheetData = utils.sheet_to_json(selectedWorksheet, {
+          raw: false,
+          dateNF: 'yyyy-mm-dd',
+          // cellDates: true,
+        });
+        setHeader(sheetData1[0]);
+
+        // Modify sheet data
+        const modifiedSheetData = sheetData.map((row, index) => {
+          if (index === 1) {
+            return Array.isArray(row)
+              ? row.map((cell) => (cell == null || cell === '' ? 0 : cell))
+              : row;
+          }
+          return row;
+        });
+        setData(modifiedSheetData as string[]);
+
+        console.log(modifiedSheetData, 'sheetdata');
+      };
+      if (file instanceof File) {
+        reader.readAsBinaryString(file);
+      }
     }
   };
 
   const handleSubmit = async () => {
-    const id = toast.loading('Submiting...', {
-      position: 'top-right',
-      className: 'm-2 ',
-      autoClose: 500,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: true,
-      progress: undefined,
-      theme: 'light',
-    });
     if (!file) {
-      toast.update(id, {
-        render: 'Please select file first.',
-        type: 'warning',
-        isLoading: false,
-        autoClose: 700,
-      });
+      toast.warning('please select file first');
     }
-    let numericData = true;
     if (project.length === 0) {
-      toast.update(id, {
-        render: 'Please enter project name.',
-        type: 'warning',
-        isLoading: false,
-        autoClose: 700,
-      });
+      toast.warning('Please Select Project Name');
     } else if (project.length > 0) {
       if (file) {
-        const reader = new FileReader();
-        reader.onload = async (event: any) => {
-          const workbook = read(event.target.result, {
-            type: 'binary',
-            cellFormula: true,
+        try {
+          const resource = data.every((a) => {
+            const propertyName = 'resource';
+            return Object.keys(a).some(
+              (key) => key.toLowerCase() === propertyName
+            );
           });
-          const sheet = workbook.Sheets['JP-M'];
 
-          let isValid = true;
-          const range = XLSX.utils.decode_range(sheet['!ref'] || '');
+          //console.log(bool);
+          if (resource === true) {
+            const isNumeric = (value: string) => /^-?\d+\.?\d*$/.test(value);
 
-          //console.log(range);
+            const areAllNumeric = (data: string | any[]) => {
+              const checkValue = (value: any) => isNumeric(value);
 
-          for (let rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
-            for (let colNum = range.s.c + 2; colNum <= range.e.c; colNum++) {
-              if (colNum === range.s.c + 1) {
-                continue; // Skip the second column
-              }
-
-              const cellAddress = XLSX.utils.encode_cell({
-                r: rowNum,
-                c: colNum,
-              });
-              const cell = sheet[cellAddress];
-
-              if (cell) {
-                const cellValue = cell.v;
-                //console.log(cellValue);
-                if (isNaN(Number(cellValue))) {
-                  console.log('NaN');
-                  isValid = false;
-                  numericData = false;
-                  //console.log(numericData, 'spl');
-                  break;
+              for (let i = 0; i < data.length; i++) {
+                const object = data[i];
+                for (const key in object) {
+                  if (
+                    key !== 'Resource' &&
+                    key !== 'Ofshore' &&
+                    !checkValue(object[key])
+                  ) {
+                    return false;
+                  }
                 }
               }
-            }
-            if (!isValid) {
-              numericData = false;
-              //console.log(numericData);
-              break;
-            }
-          }
-          if (numericData === true) {
-            const formData = new FormData();
-            let tempfile = file as File;
-            formData.append('file', tempfile);
-            formData.append('project', project);
+              return true;
+            };
 
-            const response = await axios.post(
-              `${config.SERVER_URL}evDataCreate`,
-              formData
-            );
-            console.log(response);
+            const allNumeric = areAllNumeric(data);
 
-            if (response.status === 404) {
-              toast.update(id, {
-                render: 'Error.',
-                type: 'error',
-                isLoading: false,
-                autoClose: 300,
+            if (allNumeric === true) {
+              const newWorkbook = XLSX.utils.book_new();
+
+              // Add a sheet with the extracted data to the new workbook
+              const newSheet = XLSX.utils.json_to_sheet(data);
+              XLSX.utils.book_append_sheet(newWorkbook, newSheet, 'JP-M');
+
+              // Generate the XLSX file as binary data
+              const binaryString = XLSX.write(newWorkbook, {
+                bookType: 'xlsx',
+                type: 'binary',
               });
-            } else if (response.status === 200) {
-              // toast.success('Data Submitted Successfully');
-              fetchEVF();
-              toast.update(id, {
-                render: 'File saved Successfully.',
-                type: 'success',
-                isLoading: false,
-                autoClose: 300,
+              const buffer = Buffer.from(binaryString, 'binary');
+
+              // Create a new FormData object
+              const formXlData = new FormData();
+
+              // Append the XLSX file data as a Blob or File object
+              const xlfile = new Blob([buffer], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
               });
+
+              formXlData.append('file', xlfile);
+              formXlData.append('project', project);
+
+              const response = await axios.post(
+                `${config.SERVER_URL}evDataCreate`,
+                formXlData
+              );
+
+              if (response.status === 404) {
+                toast.error('File Not Uploaded');
+              } else if (response.status === 200) {
+                // toast.success('Data Submitted Successfully');
+                fetchEVF();
+                toast.success('File Saved Successfully');
+              }
+            } else {
+              toast.error('Error reading file, have Non-Numeric Values');
             }
           } else {
-            toast.update(id, {
-              render: 'Error reading file, have Non-Numeric Values',
-              type: 'error',
-              isLoading: false,
-              autoClose: 1500,
-            });
+            toast.error('Sheet does not have resource');
           }
-        };
-        reader.readAsBinaryString(file);
+        } catch (error: any) {
+          toast.error(`${error.message}.`);
+        }
       }
     }
+  };
+
+  const handleSelectChange = (e: any) => {
+    setSelectedSheetIndex(e);
+    const worksheetNames = workbook.SheetNames;
+    const selectedWorksheet = workbook.Sheets[worksheetNames[e]];
+    const sheetData: Array<string> = utils.sheet_to_json(selectedWorksheet, {
+      raw: false,
+      dateNF: 'yyyy-mm-dd',
+      // cellDates: true,
+    });
+    const sheetData1: Array<string[]> = utils.sheet_to_json(selectedWorksheet, {
+      header: 1,
+      raw: false,
+      dateNF: 'yyyy-mm-dd',
+      // cellDates: true,
+    });
+    console.log(sheetData, 'ggggggggggggg sheetdata');
+    setData(sheetData);
+    setHeader(sheetData1[0]);
+    console.log(sheetData1[0], 'Headersssss sheetData1');
   };
 
   useEffect(() => {
@@ -270,6 +313,46 @@ const NewEV = ({
             </div>
           </Card.Body>
         </Card>
+
+        {sheetName.length > 0 && (
+          <>
+            <Card>
+              <Card.Body>
+                <div className="d-flex justify-content-between mt-1">
+                  <h5 className="mt-1 fw-bolder">
+                    Selected Sheet: {workbook.SheetNames[selectedSheetIndex]}
+                  </h5>
+                  <DropdownButton
+                    className="mb-1"
+                    variant="outline-dark"
+                    title="Select sheet"
+                    onSelect={handleSelectChange}
+                  >
+                    {workbook.SheetNames.map(
+                      (sheetName: string, index: number) => (
+                        <Dropdown.Item key={index} eventKey={index}>
+                          {sheetName}
+                        </Dropdown.Item>
+                      )
+                    )}
+                  </DropdownButton>
+                </div>
+              </Card.Body>
+            </Card>
+            <div className="d-flex">
+              <Button
+                className="my-3"
+                variant="outline-dark"
+                onClick={() => {
+                  setShowComponent(!showComponent);
+                }}
+              >
+                {showComponent ? 'Hide' : 'Show'} Table
+              </Button>
+            </div>
+          </>
+        )}
+        {showComponent && <DataTable data={data} headers={header} />}
       </div>
     </div>
   );

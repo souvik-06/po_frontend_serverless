@@ -147,26 +147,62 @@ const EVC: NextPageWithLayout = () => {
       return;
     }
     try {
-      const response = await axios.post(`${config.SERVER_URL}xlData`, {
-        data,
-        project,
+      const resource = data.every((a) => {
+        const propertyName = 'resource';
+        return Object.keys(a).some((key) => key.toLowerCase() === propertyName);
       });
 
-      if (response.status === 404) {
-        toast.update(id, {
-          render: '404, File Not Found.',
-          type: 'error',
-          isLoading: false,
-          autoClose: 300,
-        });
-      } else if (response.status === 200) {
-        // toast.success('Data Submitted Successfully');
-        toast.update(id, {
-          render: 'Data Submitted Successfully.',
-          type: 'success',
-          isLoading: false,
-          autoClose: 300,
-        });
+      //console.log(bool);
+      if (resource === true) {
+        const isNumeric = (value: string) => /^-?\d+\.?\d*$/.test(value);
+
+        const areAllNumeric = (data: string | any[]) => {
+          const checkValue = (value: any) => isNumeric(value);
+
+          for (let i = 0; i < data.length; i++) {
+            const object = data[i];
+            for (const key in object) {
+              if (
+                key !== 'Resource' &&
+                key !== 'Ofshore' &&
+                !checkValue(object[key])
+              ) {
+                return false;
+              }
+            }
+          }
+          return true;
+        };
+
+        const allNumeric = areAllNumeric(data);
+
+        if (allNumeric === true) {
+          const response = await axios.post(`${config.SERVER_URL}xlData`, {
+            data,
+            project,
+          });
+
+          if (response.status === 404) {
+            toast.update(id, {
+              render: '404, File Not Found.',
+              type: 'error',
+              isLoading: false,
+              autoClose: 300,
+            });
+          } else if (response.status === 200) {
+            // toast.success('Data Submitted Successfully');
+            toast.update(id, {
+              render: 'Data Submitted Successfully.',
+              type: 'success',
+              isLoading: false,
+              autoClose: 300,
+            });
+          }
+        } else {
+          toast.error('Error reading file, have Non-Numeric Values');
+        }
+      } else {
+        toast.error('Sheet does not have resource');
       }
     } catch (error: any) {
       toast.update(id, {
@@ -298,7 +334,7 @@ const EVC: NextPageWithLayout = () => {
                         variant="outline-primary"
                         onClick={handleSubmit}
                       >
-                        {`Submitting in ${project}`}
+                        {`Submit in ${project}`}
                       </Button>
                     )}
                   </div>

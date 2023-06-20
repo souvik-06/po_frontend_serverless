@@ -21,21 +21,23 @@ const PODesc = ({ searchDetails }: { searchDetails: sortedData }) => {
       if (a.po_description?.length === 0) {
         toast.error('Please fill Product Description.');
         isValid = false;
+        return;
       } else if (a.amount?.length === 0) {
         toast.error('Please fill Amount.');
         isValid = false;
-      } else if (a.raisedAmount?.length === 0) {
+        return;
+      } else if (a.raisedAmount?.length === 0 && a.dmrNo?.length !== 0) {
         toast.error('Please fill Raised Amount.');
         isValid = false;
-      } else if (a.dmrNo?.length == 0) {
+        return;
+      } else if (a.dmrNo?.length === 0 && a.raisedAmount.length !== 0) {
         toast.error('Please fill DMR No.');
         isValid = false;
-      } else if (a.date?.length === 0) {
-        toast.error('Please fill Date.');
-        isValid = false;
+        return;
       } else if (parseFloat(a.raisedAmount) > parseFloat(a.amount)) {
         toast.error('Raised Amount Cannot be more than the Amount');
         isValid = false;
+        return;
       }
     });
 
@@ -159,12 +161,13 @@ const PODesc = ({ searchDetails }: { searchDetails: sortedData }) => {
                   name="description"
                   id="description"
                   value={elementInArray.po_description}
-                  onChange={(e) => {
-                    elementInArray.po_description = e.target.value;
-                    setInputList({ ...inputList });
-                  }}
-                  required
-                  aria-required
+                  // onChange={(e) => {
+                  //   elementInArray.po_description = e.target.value;
+                  //   setInputList({ ...inputList });
+                  // }}
+                  // required
+                  // aria-required
+                  disabled
                 />
                 <label htmlFor="description" className="form__label">
                   Product <span className="star">*</span>
@@ -177,31 +180,32 @@ const PODesc = ({ searchDetails }: { searchDetails: sortedData }) => {
                   name="amount"
                   id="amount"
                   value={elementInArray.amount}
-                  onChange={(e) => {
-                    const input = e.target.value;
-                    let decimalValue = input.replace(/[^0-9.]/g, ''); // Remove non-numeric and non-dot characters
+                  // onChange={(e) => {
+                  //   const input = e.target.value;
+                  //   let decimalValue = input.replace(/[^0-9.]/g, ''); // Remove non-numeric and non-dot characters
 
-                    const dotIndex = decimalValue.indexOf('.');
-                    if (dotIndex !== -1) {
-                      // Limit the input to two decimal places after the dot
-                      const decimalPart = decimalValue.slice(dotIndex + 1);
-                      decimalValue =
-                        decimalValue.slice(0, dotIndex + 1) +
-                        decimalPart.slice(0, 2);
-                    }
+                  //   const dotIndex = decimalValue.indexOf('.');
+                  //   if (dotIndex !== -1) {
+                  //     // Limit the input to two decimal places after the dot
+                  //     const decimalPart = decimalValue.slice(dotIndex + 1);
+                  //     decimalValue =
+                  //       decimalValue.slice(0, dotIndex + 1) +
+                  //       decimalPart.slice(0, 2);
+                  //   }
 
-                    if (/^\d*\.?\d{0,2}$/.test(decimalValue)) {
-                      // Only update the value if it's empty or contains up to two decimal places
-                      elementInArray.amount = decimalValue;
-                    } else {
-                      // Handle invalid input (clear the value or take other action)
-                      elementInArray.amount = ''; // or any other desired action
-                    }
+                  //   if (/^\d*\.?\d{0,2}$/.test(decimalValue)) {
+                  //     // Only update the value if it's empty or contains up to two decimal places
+                  //     elementInArray.amount = decimalValue;
+                  //   } else {
+                  //     // Handle invalid input (clear the value or take other action)
+                  //     elementInArray.amount = ''; // or any other desired action
+                  //   }
 
-                    setInputList({ ...inputList });
-                  }}
-                  required
-                  aria-required
+                  //   setInputList({ ...inputList });
+                  // }}
+                  // required
+                  // aria-required
+                  disabled
                 />
                 <label htmlFor="amount" className="form__label">
                   Amount {`(${data.currency})`}
@@ -243,12 +247,11 @@ const PODesc = ({ searchDetails }: { searchDetails: sortedData }) => {
 
                     setInputList({ ...inputList });
                   }}
-                  required
                   aria-required
                 />
                 <label htmlFor="raisedAmount" className="form__label">
                   Raised Amount {`(${data.currency})`}
-                  <span className="star">*</span>
+                  {/* <span className="star">*</span> */}
                 </label>
               </Col>
               <Col className="form__group field">
@@ -262,11 +265,11 @@ const PODesc = ({ searchDetails }: { searchDetails: sortedData }) => {
                     elementInArray.dmrNo = e.target.value;
                     setInputList({ ...inputList });
                   }}
-                  required
                   aria-required
                 />
                 <label htmlFor="dmrNO" className="form__label">
-                  DMR No.<span className="star">*</span>
+                  DMR No.
+                  {/* <span className="star">*</span> */}
                 </label>
               </Col>
               <Col className="form__group field">
@@ -277,14 +280,38 @@ const PODesc = ({ searchDetails }: { searchDetails: sortedData }) => {
                   type="date"
                   value={elementInArray.date}
                   onChange={(e) => {
+                    const inputDate = new Date(e.target.value);
+                    const maxYear = new Date();
+                    maxYear.setFullYear(maxYear.getFullYear() + 50); // Maximum allowed year is 50 years greater than today
+                    const specificDate = new Date(data.date); // Replace "2023-01-01" with your specific date
+
+                    if (inputDate > maxYear) {
+                      // Input date exceeds the maximum allowed year
+                      // You can handle this validation error accordingly
+                      console.log(
+                        'Please enter a date up to 50 years from today.'
+                      );
+                      return;
+                    }
+
+                    if (inputDate < specificDate) {
+                      // Input date is before the specific date
+                      // You can handle this validation error accordingly
+                      console.log(
+                        'Please enter a date after ' +
+                          specificDate.toDateString()
+                      );
+                      return;
+                    }
+
                     elementInArray.date = e.target.value;
                     setInputList({ ...inputList });
                   }}
-                  required
                   aria-required
                 />
-                <label htmlFor="amount" className="form__label">
-                  Date<span className="star">*</span>
+                <label htmlFor="date" className="form__label">
+                  Date
+                  {/* <span className="star">*</span> */}
                 </label>
               </Col>
             </Row>

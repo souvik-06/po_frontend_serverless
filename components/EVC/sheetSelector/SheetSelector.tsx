@@ -38,7 +38,7 @@ const SheetSelector = ({
       dateNF: 'yyyy-mm-dd',
       // cellDates: true,
     });
-    console.log(sheetData1, 'sheetdata header');
+    console.log(sheetData, 'ggggggggggggg');
     setData(sheetData);
     setHeader(sheetData1[0]);
     console.log(sheetData1[0], 'Headersssss');

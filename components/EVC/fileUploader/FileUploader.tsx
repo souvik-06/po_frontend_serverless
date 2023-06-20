@@ -153,8 +153,8 @@ const FileUploader = ({
     e.preventDefault();
     setFileError('');
     try {
-      let numericData = true;
       let file: File | null = e.target.files[0];
+      console.log();
 
       if (!file) {
         return;
@@ -172,102 +172,48 @@ const FileUploader = ({
         toast.error('Please select XLSX file only!');
         handleRemoveFile();
       } else if (file) {
-        console.log('in my code');
         const reader = new FileReader();
         reader.onload = (event: any) => {
           const workbook = read(event.target.result, {
             type: 'binary',
             cellFormula: true,
           });
-          const sheet = workbook.Sheets['JP-M'];
-
-          let isValid = true;
-          const range = XLSX.utils.decode_range(sheet['!ref'] || '');
-
-          //console.log(range);
-
-          for (let rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
-            for (let colNum = range.s.c + 2; colNum <= range.e.c; colNum++) {
-              if (colNum === range.s.c + 1) {
-                continue; // Skip the second column
-              }
-
-              const cellAddress = XLSX.utils.encode_cell({
-                r: rowNum,
-                c: colNum,
-              });
-              const cell = sheet[cellAddress];
-
-              if (cell) {
-                const cellValue = cell.v;
-                //console.log(cellValue);
-                if (isNaN(Number(cellValue))) {
-                  console.log('NaN');
-                  isValid = false;
-                  numericData = false;
-                  //console.log(numericData, 'spl');
-                  break;
-                }
-              }
+          setWorkbook(workbook);
+          setSheetName(workbook.SheetNames);
+          const selectedWorksheet = workbook.Sheets[workbook.SheetNames[0]];
+          const sheetData1: Array<string[]> = utils.sheet_to_json(
+            selectedWorksheet,
+            {
+              header: 1,
+              raw: false,
+              dateNF: 'yyyy-mm-dd',
+              // cellDates: true,
             }
-            if (!isValid) {
-              numericData = false;
-              //console.log(numericData);
-              break;
-            }
-          }
-          if (numericData === true) {
-            const reader = new FileReader();
-            reader.onload = (event: any) => {
-              const workbook = read(event.target.result, {
-                type: 'binary',
-                cellFormula: true,
-              });
-              setWorkbook(workbook);
-              setSheetName(workbook.SheetNames);
-              const selectedWorksheet = workbook.Sheets[workbook.SheetNames[0]];
-              const sheetData1: Array<string[]> = utils.sheet_to_json(
-                selectedWorksheet,
-                {
-                  header: 1,
-                  raw: false,
-                  dateNF: 'yyyy-mm-dd',
-                  // cellDates: true,
-                }
-              );
-              const sheetData = utils.sheet_to_json(selectedWorksheet, {
-                raw: false,
-                dateNF: 'yyyy-mm-dd',
-                // cellDates: true,
-              });
-              setHeader(sheetData1[0]);
+          );
+          const sheetData = utils.sheet_to_json(selectedWorksheet, {
+            raw: false,
+            dateNF: 'yyyy-mm-dd',
+            // cellDates: true,
+          });
+          setHeader(sheetData1[0]);
 
-              // Modify sheet data
-              const modifiedSheetData = sheetData.map((row, index) => {
-                if (index === 1) {
-                  return Array.isArray(row)
-                    ? row.map((cell) =>
-                        cell == null || cell === '' ? 0 : cell
-                      )
-                    : row;
-                }
-                return row;
-              });
-              setData(modifiedSheetData as string[]);
-
-              console.log(modifiedSheetData, 'sheetdata');
-            };
-            if (file instanceof File) {
-              reader.readAsBinaryString(file);
+          // Modify sheet data
+          const modifiedSheetData = sheetData.map((row, index) => {
+            if (index === 1) {
+              return Array.isArray(row)
+                ? row.map((cell) => (cell == null || cell === '' ? 0 : cell))
+                : row;
             }
-          } else {
-            toast.error('Error reading file, have Non-Numeric Values');
-            handleRemoveFile();
-          }
+            return row;
+          });
+          setData(modifiedSheetData as string[]);
+
+          console.log(modifiedSheetData, 'sheetdata');
         };
-        reader.readAsBinaryString(file);
+        if (file instanceof File) {
+          reader.readAsBinaryString(file);
+        }
       }
-      console.log(numericData, 'final');
     } catch (error) {
       setFileError('Error reading file. Please select a valid Excel file.');
     }

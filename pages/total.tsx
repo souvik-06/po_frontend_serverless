@@ -26,18 +26,20 @@ const Total: NextPageWithLayout = () => {
           (a: sortedData, b: sortedData) =>
             new Date(b.date).getTime() - new Date(a.date).getTime()
         );
-        console.log(data);
+        //console.log(data);
         data = data.map((el) => {
           let totalAmount = 0;
           let totalRaisedAmount = 0;
           el.details.map((ed) => {
-            if (!isNaN(Number(ed.amount))) {
+            //console.log(ed, 'impotant');
+            if (!isNaN(parseFloat(ed.amount))) {
               totalAmount += parseFloat(ed.amount);
             }
-            if (!isNaN(Number(ed.raisedAmount))) {
+            if (!isNaN(parseFloat(ed.raisedAmount))) {
               totalRaisedAmount += parseFloat(ed.raisedAmount);
             }
           });
+          console.log(totalRaisedAmount, 'totraised');
           return {
             ...el,
             totalAmount: totalAmount.toFixed(2),

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Col, Form, Row } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { SpinnerCircular } from 'spinners-react';
+import XLSX from 'xlsx';
 import config from '../../../config.json';
 import style from '../PO.module.css';
 import AddRows from '../RowAR/RowAR';
@@ -143,6 +144,62 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
       } catch (error) {
         setIsLoading(false);
         toast.error(`${(error as Error).message}`);
+      }
+
+      try {
+        const workbook = XLSX.utils.book_new();
+
+        // Create a new empty worksheet
+        const worksheet = XLSX.utils.aoa_to_sheet([]);
+
+        // Add the worksheet to the workbook
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'JP-M');
+
+        // Generate the XLSX file as binary data
+        const binaryString = XLSX.write(workbook, {
+          bookType: 'xlsx',
+          type: 'binary',
+        });
+        const buffer = Buffer.from(binaryString, 'binary');
+
+        // Create a new FormData object
+        const formXlData = new FormData();
+
+        // Append the XLSX file data as a Blob or File object
+        const xlfile = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        formXlData.append('file', xlfile);
+        formXlData.append('project', data.projectName);
+
+        const response = await axios.post(
+          `${config.SERVER_URL}evDataCreate`,
+          formXlData
+        );
+        if (response.status === 200) {
+          // handleReset();
+          // setIsLoading(false);
+          console.log(response, 'New EVC');
+          //toast.success(`${response.data.msg} `);
+          // await axios.post(`${config.SERVER_URL}uploadFile`, formData);
+        }
+        if (response.status === 404) {
+          // handleReset();
+          // setIsLoading(false);
+          // toast.success(`${response.data.msg} `);
+          // await axios.post(`${config.SERVER_URL}uploadFile`, formData);
+          console.log(response.data.msg);
+        }
+        if (response.status !== 404 && response.status !== 200) {
+          // handleReset();
+          // setIsLoading(false);
+          // toast.success(`${response.data.msg} `);
+          console.log(response.data.msg);
+        }
+      } catch (error) {
+        // setIsLoading(false);
+        // toast.error(`${(error as Error).message}`);
+        console.log(error);
       }
     }
   };
