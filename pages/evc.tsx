@@ -132,16 +132,6 @@ const EVC: NextPageWithLayout = () => {
   };
 
   const handleSubmit = async () => {
-    const id = toast.loading('Submiting...', {
-      position: 'bottom-right',
-      autoClose: 500,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: true,
-      progress: undefined,
-      theme: 'light',
-    });
     if (sheetName.length === 0) {
       setDataError('No data to submit.');
       return;
@@ -152,8 +142,18 @@ const EVC: NextPageWithLayout = () => {
         return Object.keys(a).some((key) => key.toLowerCase() === propertyName);
       });
 
-      //console.log(bool);
-      if (resource === true) {
+      const offshore = data.every((a) => {
+        const propertyName = 'offshore';
+        const propertyName1 = 'ofshore';
+        return Object.keys(a).some(
+          (key) =>
+            key.toLowerCase() === propertyName ||
+            key.toLowerCase() === propertyName1
+        );
+      });
+
+      console.log(offshore);
+      if (resource === true && offshore === true) {
         const isNumeric = (value: string) => /^-?\d+\.?\d*$/.test(value);
 
         const areAllNumeric = (data: string | any[]) => {
@@ -183,34 +183,23 @@ const EVC: NextPageWithLayout = () => {
           });
 
           if (response.status === 404) {
-            toast.update(id, {
-              render: '404, File Not Found.',
-              type: 'error',
-              isLoading: false,
-              autoClose: 300,
-            });
+            toast.error('404 file not found');
           } else if (response.status === 200) {
-            // toast.success('Data Submitted Successfully');
-            toast.update(id, {
-              render: 'Data Submitted Successfully.',
-              type: 'success',
-              isLoading: false,
-              autoClose: 300,
-            });
+            toast.success('Data Submitted Successfully');
+            handleRemoveFile();
           }
         } else {
           toast.error('Error reading file, have Non-Numeric Values');
         }
-      } else {
+      } else if (resource === false && offshore === true) {
         toast.error('Sheet does not have resource');
+      } else if (resource === true && offshore === false) {
+        toast.error('Sheet does not have offshore');
+      } else {
+        toast.error('Sheet does not have resource and offshore');
       }
     } catch (error: any) {
-      toast.update(id, {
-        render: `${error.message}.`,
-        type: 'error',
-        isLoading: false,
-        autoClose: 300,
-      });
+      toast.error(error);
     }
   };
   const handleSelectChange = (e: any) => {

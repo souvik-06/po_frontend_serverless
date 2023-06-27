@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Col, Form, Row } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { SpinnerCircular } from 'spinners-react';
@@ -54,6 +54,9 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const [projectNames, setProjectNames] = useState<string[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<string[]>([]);
+
   //Adding consecutive rows in particular DMR
   const handleAddRows = () => {
     setInputList({
@@ -71,6 +74,14 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
       ],
     });
   };
+  const fetchData = async () => {
+    const response = await axios.get(`${config.SERVER_URL}getEvFiles`);
+    setProjectNames(response.data);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   //Adding consecutive rows in particular DMR
   const handleRemoveRows = (index: number) => {
@@ -284,10 +295,26 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
                 value={inputList.projectName}
                 required
                 aria-required
-                onChange={(e) =>
-                  setInputList({ ...inputList, projectName: e.target.value })
-                }
+                onChange={(e) => {
+                  setInputList({ ...inputList, projectName: e.target.value });
+                  if (e.target.value.length === 0) {
+                    setFilteredProjects([]);
+                    return;
+                  }
+                  const filtered = projectNames.filter((project) =>
+                    project.toLowerCase().includes(e.target.value.toLowerCase())
+                  );
+                  setFilteredProjects(filtered);
+                }}
               />
+              {filteredProjects.length > 0 && (
+                <ul className={style.suggestions}>
+                  {filteredProjects.map((project, index) => (
+                    <li key={index}>{project}</li>
+                  ))}
+                </ul>
+              )}
+
               <label htmlFor="ponumber" className="form__label">
                 Project Name <span className="star">*</span>
               </label>
@@ -335,7 +362,7 @@ const PoDetails = ({ file, handleReset, fileName }: props) => {
                   setInputList({ ...inputList, currency: e.target.value })
                 }
               >
-                <option value="" disabled selected>
+                <option value="currency" disabled>
                   Select Currency
                 </option>
                 <option value="USD">USD</option>

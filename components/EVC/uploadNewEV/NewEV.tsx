@@ -122,8 +122,18 @@ const NewEV = ({
             );
           });
 
+          const offshore = data.every((a) => {
+            const propertyName = 'offshore';
+            const propertyName1 = 'ofshore';
+            return Object.keys(a).some(
+              (key) =>
+                key.toLowerCase() === propertyName ||
+                key.toLowerCase() === propertyName1
+            );
+          });
+
           //console.log(bool);
-          if (resource === true) {
+          if (resource === true && offshore === true) {
             const isNumeric = (value: string) => /^-?\d+\.?\d*$/.test(value);
 
             const areAllNumeric = (data: string | any[]) => {
@@ -186,8 +196,12 @@ const NewEV = ({
             } else {
               toast.error('Error reading file, have Non-Numeric Values');
             }
-          } else {
+          } else if (resource === false && offshore === true) {
             toast.error('Sheet does not have resource');
+          } else if (resource === true && offshore === false) {
+            toast.error('Sheet does not have offshore');
+          } else {
+            toast.error('Sheet does not have resource and offshore');
           }
         } catch (error: any) {
           toast.error(`${error.message}.`);
